@@ -1,0 +1,17 @@
+connections:
+  - ssh:
+    user: admuser
+    server: 1_nebin01
+    port: 11010
+#    public_key: /home/jsmoya/.ssh/key_server
+    tunnels:
+        - "L,10000,localhost,10000"
+
+
+  - ssh:
+    user: pi
+    server: server
+    port: 22
+    tunnels:
+#        - "L,10000,localhost,10000"
+        - "L,10001,localhost,10001"
