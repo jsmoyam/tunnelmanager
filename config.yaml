@@ -2,6 +2,7 @@ connections:
 
 
   - ssh:
+    name: server
     user: pi
     server: server
     port: 22

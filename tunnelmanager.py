@@ -70,6 +70,7 @@ def read_config(config_file: str) -> list:
 
 def connect(connections: list) -> None:
     # Try to connect
+
     for c in connections:
         cmd = c.get_cmd()
         global ssh_connections
@@ -77,8 +78,16 @@ def connect(connections: list) -> None:
         ssh_connections.append(ssh)
 
         try:
-            ssh.expect('assword:', timeout=5)
             time.sleep(0.1)
+            try:
+                ssh.expect('(yes / no)?', timeout=0.2)
+                time.sleep(0.1)
+                ssh.sendline('yes')
+                time.sleep(0.1)
+            except:
+                pass
+
+            ssh.expect('assword:', timeout=2)
 
             if sys.stdin.isatty():
                 ssh.sendline(sys.stdin.readline().rstrip())
@@ -104,7 +113,6 @@ def main(config_file: 'Config file' = 'config.yaml'):
     except FileNotFoundError:
         print('File {} not found'.format(config_file))
         sys.exit(1)
-
 
     try:
         while True:
