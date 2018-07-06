@@ -5,8 +5,8 @@ import pexpect
 import getpass
 import begin
 
-
 ssh_connections = list()
+connections = None
 
 class Connection:
     def __init__(self, connection: dict):
@@ -68,7 +68,7 @@ def read_config(config_file: str) -> list:
 
     raise FileNotFoundError('Config file not found: {}'.format(config_file))
 
-def connect(connections: list) -> None:
+def connect_ssh(connections: list) -> None:
     # Try to connect
 
     for c in connections:
@@ -79,20 +79,20 @@ def connect(connections: list) -> None:
 
         try:
             time.sleep(0.1)
-            try:
-                ssh.expect('(yes / no)?', timeout=0.2)
-                time.sleep(0.1)
-                ssh.sendline('yes')
-                time.sleep(0.1)
-            except:
-                pass
+            # try:
+            #     ssh.expect('(yes / no)?', timeout=0.2)
+            #     time.sleep(0.1)
+            #     ssh.sendline('yes')
+            #     time.sleep(0.1)
+            # except:
+            #     pass
 
             ssh.expect('assword:', timeout=2)
 
-            if sys.stdin.isatty():
+            if not sys.stdin.isatty():
                 ssh.sendline(sys.stdin.readline().rstrip())
             else:
-                ssh.sendline(getpass.getpass('Insert password for {}: '.format(c.server)))
+                ssh.sendline(getpass.getpass('Insert password for {}: '.format(c.name)))
 
             time.sleep(0.5)
         except pexpect.TIMEOUT:
@@ -101,24 +101,40 @@ def connect(connections: list) -> None:
         except pexpect.exceptions.EOF:
             pass
 
-        print('{} connected'.format(c.name))
+        print('    - {} connected'.format(c.name))
 
-@begin.start(auto_convert=True)
-def main(config_file: 'Config file' = 'config.yaml'):
-    """Create tunnels"""
-
-    try:
-        connections = read_config(config_file)
-        connect(connections)
-    except FileNotFoundError:
-        print('File {} not found'.format(config_file))
-        sys.exit(1)
-
+def sleep_loop():
+    '''Bucle infinito hasta pulsar control c'''
     try:
         while True:
             time.sleep(2)
     except KeyboardInterrupt:
         sys.exit(0)
 
+@begin.subcommand
+def connectall():
+    """Connect all ssh configured ssh connections"""
+    print('Connecting all ssh connections')
+    connect_ssh(connections)
+    print('All connected')
+    sleep_loop()
 
+@begin.subcommand
+def connect(names):
+    """Connect given ssh connections"""
+    names_list = names.split(',')
+    print('Connecting {} connections'.format(names))
+    connections_filtered = [c for c in connections if c.name in names_list]
+    connect_ssh(connections_filtered)
+    print('All connected')
+    sleep_loop()
 
+@begin.start(auto_convert=True)
+def main(config_file: 'Config file' = 'tunnels.yaml'):
+    """Create tunnels"""
+    try:
+        global connections
+        connections = read_config(config_file)
+    except FileNotFoundError:
+        print('ERROR: File {} not found'.format(config_file))
+        sys.exit(1)
