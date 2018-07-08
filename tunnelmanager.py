@@ -229,7 +229,11 @@ def connect(names):
     # Filtrar conexiones y conectar
     global connections
     connections_filtered = [c for c in connections if c.name in names_list]
-    connect_ssh(connections_filtered)
+
+    # Añadir dependencias de la conexion
+    connections_filtered_with_dependencies = connections_filtered
+
+    connect_ssh(connections_filtered_with_dependencies)
     print('\nProcess finished')
     sleep_loop()
 
