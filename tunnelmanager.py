@@ -103,7 +103,7 @@ def connect_ssh(conns: list) -> None:
             if debug_mode:
                 print('SSH command: {}'.format(cmd))
 
-            ret = ssh.expect(['yes/no', 'assword: ', '[#\$] '], timeout=5)
+            ret = ssh.expect(['yes/no', 'assword: ', '[#\$\\x1b[00m] '], timeout=5)
 
             if debug_mode:
                 print('RET: {} Output: {}'.format(ret, ssh.before))
@@ -114,7 +114,7 @@ def connect_ssh(conns: list) -> None:
                 ssh.sendline('yes')
                 time.sleep(0.1)
 
-                ret2 = ssh.expect(['assword: ', '[#\$] '], timeout=5)
+                ret2 = ssh.expect(['assword: ', '[#\$\\x1b[00m] '], timeout=5)
                 if ret2 == 1:
                     if not sys.stdin.isatty():
                         if debug_mode:
@@ -124,7 +124,7 @@ def connect_ssh(conns: list) -> None:
                     else:
                         ssh.sendline(getpass.getpass('      Insert password for {}: '.format(c.name)))
 
-                    ret3 = ssh.expect(['Permission denied', '[#\$] '], timeout=5)
+                    ret3 = ssh.expect(['Permission denied', '[#\$\\x1b[00m] '], timeout=5)
                     if ret3 == 0:
                         print('      *** Permission denied ***')
                         continue
@@ -141,7 +141,7 @@ def connect_ssh(conns: list) -> None:
                 else:
                     ssh.sendline(getpass.getpass('      Insert password for {}: '.format(c.name)))
 
-                ret2 = ssh.expect(['Permission denied', '[#\$] '], timeout=5)
+                ret2 = ssh.expect(['Permission denied', '[#\$\\x1b[00m] '], timeout=5)
                 if ret2 == 0:
                     print('      *** Permission denied ***')
                     continue
